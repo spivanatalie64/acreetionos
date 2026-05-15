@@ -95,3 +95,46 @@ sleep-display-ac=0
 
 [theme]
 name='cinnamon'
+
+[desktop/keybindings]
+custom-list=['session-cinnamon', 'session-cinnamon2d', 'session-xfce', 'session-gnome', 'session-cinnamon-3', 'session-xfce-3', 'session-gnome-4', 'session-cinnamon2d-4']
+
+[desktop/keybindings/custom-keybindings/session-cinnamon]
+name='Launch Cinnamon session'
+command='bash /usr/local/bin/launch-desktop-session cinnamon :1'
+binding=['<Super>F1']
+
+[desktop/keybindings/custom-keybindings/session-cinnamon2d]
+name='Launch Cinnamon 2D session'
+command='bash /usr/local/bin/launch-desktop-session cinnamon2d :2'
+binding=['<Super><Shift>F1']
+
+[desktop/keybindings/custom-keybindings/session-xfce]
+name='Launch Xfce session'
+command='bash /usr/local/bin/launch-desktop-session xfce :3'
+binding=['<Super>F2']
+
+[desktop/keybindings/custom-keybindings/session-gnome]
+name='Launch GNOME session'
+command='bash /usr/local/bin/launch-desktop-session gnome :4'
+binding=['<Super><Shift>F2']
+
+[desktop/keybindings/custom-keybindings/session-cinnamon-3]
+name='Launch Cinnamon session 2'
+command='bash /usr/local/bin/launch-desktop-session cinnamon :5'
+binding=['<Super>F3']
+
+[desktop/keybindings/custom-keybindings/session-xfce-3]
+name='Launch Xfce session 2'
+command='bash /usr/local/bin/launch-desktop-session xfce :6'
+binding=['<Super><Shift>F3']
+
+[desktop/keybindings/custom-keybindings/session-gnome-4]
+name='Launch GNOME session 2'
+command='bash /usr/local/bin/launch-desktop-session gnome :7'
+binding=['<Super>F4']
+
+[desktop/keybindings/custom-keybindings/session-cinnamon2d-4]
+name='Launch Cinnamon 2D session 2'
+command='bash /usr/local/bin/launch-desktop-session cinnamon2d :8'
+binding=['<Super><Shift>F4']

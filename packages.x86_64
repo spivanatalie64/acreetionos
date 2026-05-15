@@ -89,6 +89,9 @@ sof-firmware
 ################################################################################
 xorg-server
 xorg-server-common
+xorg-xinit
+xfce4
+gnome
 mesa
 mesa-utils
 glu
