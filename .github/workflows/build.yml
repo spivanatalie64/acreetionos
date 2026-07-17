@@ -1,0 +1,52 @@
+name: Build & Test ISO
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+env:
+  VARIANT: cinnamon
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
+      options: --privileged
+    timeout-minutes: 180
+    steps:
+      - name: Install deps
+        run: |
+          pacman -Sy --noconfirm archlinux-keyring
+          pacman -S --noconfirm --needed archiso squashfs-tools dosfstools erofs-utils mtools xorriso libarchive grub edk2-shell git
+      - uses: actions/checkout@v4
+      - name: Cache ISO build
+        uses: actions/cache@v4
+        with:
+          path: |
+            /var/cache/pacman/pkg
+            work/
+          key: ${{ runner.os }}-iso-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-iso-
+      - name: Build ISO
+        run: |
+          chmod +x build.sh
+          ./build.sh 2>&1
+      - name: Verify ISO
+        run: |
+          for f in out/*.iso; do
+            [ -f "$f" ] || { echo "No ISO produced"; exit 1; }
+            echo "ISO: $f ($(du -h "$f" | cut -f1))"
+            sha256sum "$f"
+          done
+      - name: Upload ISO as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: acreetionos-iso
+          path: out/*.iso
+          retention-days: 7
