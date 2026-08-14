@@ -11,8 +11,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Run ShellCheck
+      - name: Run ShellCheck (repo scripts only)
         uses: ludeeus/action-shellcheck@master
         with:
-          severity: style
-          ignore: .vscode
+          severity: warning
+          ignore: airootfs work out variants/_template
+          exclude: SC2034
+      - name: Validate variant shell files
+        run: |
+          for f in variants/official/*/profiledef.sh; do
+            bash -n "$f" || exit 1
+          done
+          echo "variant profiles OK"

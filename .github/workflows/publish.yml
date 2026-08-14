@@ -1,10 +1,15 @@
 name: Publish Editions
 
+# NOTE: ISO artifacts are produced by the GitLab CI pipeline (shell runner),
+# which publishes <slug>-latest.iso to the iso-server directly. This
+# workflow is a fallback for manual publish of locally-built ISOs.
 on:
-  workflow_run:
-    workflows: ["Build & Test ISO"]
-    types: [completed]
   workflow_dispatch:
+    inputs:
+      iso_dir:
+        description: 'Directory containing ISOs (path on this repo checkout)'
+        required: false
+        default: 'out'
 
 env:
   DL_SERVER: us.iso.acreetionos.org
@@ -14,42 +19,32 @@ env:
 
 jobs:
   publish:
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 30
     steps:
-      - name: Install deps
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq sshpass openssh-client
       - uses: actions/checkout@v4
-      - name: Download all edition artifacts
-        uses: actions/download-artifact@v4
-        with:
-          pattern: acreetionos-*-iso
-          merge-multiple: false
-          path: isos
-      - name: List downloaded ISOs
+      - name: Find ISOs
+        id: find
         run: |
-          find isos -name "*.iso" -exec ls -lh {} \;
+          ISOS=$(find "${{ github.event.inputs.iso_dir }}" -name "*.iso" 2>/dev/null || true)
+          if [ -z "$ISOS" ]; then
+            echo "No ISOs found — nothing to publish (GitLab CI handles normal builds)"
+            echo "found=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "$ISOS"
+            echo "found=true" >> "$GITHUB_OUTPUT"
+          fi
       - name: Deploy ISOs to download server
+        if: steps.find.outputs.found == 'true'
         env:
           DL_SSH_KEY: ${{ secrets.DL_SSH_KEY }}
         run: |
           echo "$DL_SSH_KEY" > /tmp/dl_key
           chmod 600 /tmp/dl_key
-          for iso in $(find isos -name "*.iso"); do
+          for iso in $(find "${{ github.event.inputs.iso_dir }}" -name "*.iso"); do
             base=$(basename "$iso")
-            # map artifact name -> edition slug (drop the -iso suffix)
             slug=$(echo "$base" | sed 's/\.iso$//' | sed 's/AcreetionOS[-_]//' | tr '[:upper:]' '[:lower:]')
             echo "Uploading $base as ${slug}-latest.iso"
             scp -P $DL_PORT -i /tmp/dl_key -o StrictHostKeyChecking=no \
               "$iso" "${DL_USER}@${DL_SERVER}:${DL_DIR}/${slug}-latest.iso" || echo "FAILED: $base"
-          done
-      - name: Verify deployed
-        run: |
-          for f in $(find isos -name "*.iso"); do
-            slug=$(basename "$f" | sed 's/\.iso$//' | sed 's/AcreetionOS[-_]//' | tr '[:upper:]' '[:lower:]')
-            echo -n "$slug-latest.iso -> "
-            curl -s -o /dev/null -w "%{http_code} (%{size_download} bytes)\n" --max-time 15 "https://dl.acreetionos.org/${slug}-latest.iso" || echo "unreachable"
           done
