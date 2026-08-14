@@ -16,10 +16,9 @@
 lightdm
 lightdm-gtk-greeter
 openbox
-obconf
+obconf-qt
 tint2
 xterm
 feh
 picom
-nitrogen
 volumeicon

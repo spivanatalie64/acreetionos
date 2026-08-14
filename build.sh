@@ -80,6 +80,14 @@ fi
 if [ -f profiledef.sh.bak ]; then
     mv profiledef.sh.bak profiledef.sh
     mv packages.x86_64.bak packages.x86_64
+    # restore airootfs overlay: remove any files the variant overlay added.
+    # (only removes exact overlay paths so shared configs stay intact)
+    if [ -d "$VARIANT_DIR/airootfs" ]; then
+        (cd "$VARIANT_DIR/airootfs" && find . -type f) | while read -r f; do
+            rm -f "airootfs/$f"
+        done
+        (cd "$VARIANT_DIR/airootfs" && find . -type d -empty -delete) 2>/dev/null || true
+    fi
 fi
 
 # cleanup
