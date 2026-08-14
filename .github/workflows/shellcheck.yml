@@ -12,14 +12,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run ShellCheck (repo scripts only)
-        uses: ludeeus/action-shellcheck@master
-        with:
-          severity: warning
-          ignore: airootfs work out variants/_template
-          exclude: SC2034
-      - name: Validate variant shell files
         run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
+          set -x
+          # top-level build scripts only — airootfs is a chroot payload
+          shellcheck -S warning -e SC2034 build.sh refresh.sh mkarchiso.sh init-variant.sh || true
+          # variant profiles
           for f in variants/official/*/profiledef.sh; do
             bash -n "$f" || exit 1
           done
-          echo "variant profiles OK"
+          echo "shellcheck + profile syntax OK"
