@@ -27,7 +27,7 @@ jobs:
       # /dev /proc /sys mounts inside the chroot — a nested container can't
       # provide those reliably, so we use a one-shot archlinux container with
       # --privileged and let it do the mount work.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Build ISO (${{ matrix.variant }})
         run: |
           docker run --rm --privileged \
@@ -52,7 +52,7 @@ jobs:
             sha256sum "$f"
           done
       - name: Upload ISO as artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: acreetionos-${{ matrix.variant }}-iso
           path: out/*.iso

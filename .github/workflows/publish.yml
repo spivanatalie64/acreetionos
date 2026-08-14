@@ -22,9 +22,9 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq sshpass openssh-client
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Download all edition artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: acreetionos-*-iso
           merge-multiple: false
