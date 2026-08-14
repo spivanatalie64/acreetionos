@@ -1,0 +1,55 @@
+name: Publish Editions
+
+on:
+  workflow_run:
+    workflows: ["Build & Test ISO"]
+    types: [completed]
+  workflow_dispatch:
+
+env:
+  DL_SERVER: us.iso.acreetionos.org
+  DL_PORT: 2400
+  DL_USER: natalie
+  DL_DIR: /drive1/acreetion
+
+jobs:
+  publish:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Install deps
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq sshpass openssh-client
+      - uses: actions/checkout@v4
+      - name: Download all edition artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: acreetionos-*-iso
+          merge-multiple: false
+          path: isos
+      - name: List downloaded ISOs
+        run: |
+          find isos -name "*.iso" -exec ls -lh {} \;
+      - name: Deploy ISOs to download server
+        env:
+          DL_SSH_KEY: ${{ secrets.DL_SSH_KEY }}
+        run: |
+          echo "$DL_SSH_KEY" > /tmp/dl_key
+          chmod 600 /tmp/dl_key
+          for iso in $(find isos -name "*.iso"); do
+            base=$(basename "$iso")
+            # map artifact name -> edition slug (drop the -iso suffix)
+            slug=$(echo "$base" | sed 's/\.iso$//' | sed 's/AcreetionOS[-_]//' | tr '[:upper:]' '[:lower:]')
+            echo "Uploading $base as ${slug}-latest.iso"
+            scp -P $DL_PORT -i /tmp/dl_key -o StrictHostKeyChecking=no \
+              "$iso" "${DL_USER}@${DL_SERVER}:${DL_DIR}/${slug}-latest.iso" || echo "FAILED: $base"
+          done
+      - name: Verify deployed
+        run: |
+          for f in $(find isos -name "*.iso"); do
+            slug=$(basename "$f" | sed 's/\.iso$//' | sed 's/AcreetionOS[-_]//' | tr '[:upper:]' '[:lower:]')
+            echo -n "$slug-latest.iso -> "
+            curl -s -o /dev/null -w "%{http_code} (%{size_download} bytes)\n" --max-time 15 "https://dl.acreetionos.org/${slug}-latest.iso" || echo "unreachable"
+          done
