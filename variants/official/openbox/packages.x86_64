@@ -1,0 +1,25 @@
+# openbox variant — same AcreetionOS, openbox desktop
+# removes: cinnamon stack + lightdm (re-added where needed)
+-cinnamon
+-cinnamon-control-center
+-cinnamon-desktop
+-cinnamon-menus
+-cinnamon-session
+-cinnamon-settings-daemon
+-cinnamon-screensaver
+-cinnamon-translations
+-cjs
+-muffin
+-nemo
+
+# openbox desktop
+lightdm
+lightdm-gtk-greeter
+openbox
+obconf
+tint2
+xterm
+feh
+picom
+nitrogen
+volumeicon

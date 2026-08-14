@@ -1,0 +1,22 @@
+# gnome variant — same AcreetionOS, gnome desktop
+# removes: cinnamon stack + lightdm (re-added where needed)
+-cinnamon
+-cinnamon-control-center
+-cinnamon-desktop
+-cinnamon-menus
+-cinnamon-session
+-cinnamon-settings-daemon
+-cinnamon-screensaver
+-cinnamon-translations
+-cjs
+-muffin
+-nemo
+
+# gnome desktop
+gdm
+gnome
+gnome-shell
+gnome-console
+nautilus
+gnome-tweaks
+gnome-system-monitor

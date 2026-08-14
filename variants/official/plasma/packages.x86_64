@@ -1,0 +1,23 @@
+# plasma variant — same AcreetionOS, plasma desktop
+# removes: cinnamon stack + lightdm (re-added where needed)
+-cinnamon
+-cinnamon-control-center
+-cinnamon-desktop
+-cinnamon-menus
+-cinnamon-session
+-cinnamon-settings-daemon
+-cinnamon-screensaver
+-cinnamon-translations
+-cjs
+-muffin
+-nemo
+
+# plasma desktop
+sddm
+plasma-meta
+plasma-desktop
+konsole
+dolphin
+kde-system-meta
+kde-utilities-meta
+kde-graphics-meta

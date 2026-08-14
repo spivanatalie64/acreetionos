@@ -42,9 +42,19 @@ if [ -n "$VARIANT_DIR" ]; then
         fi
     done < "$VARIANT_DIR/profiledef.sh"
 
-    # append variant packages (excluding comments and blank lines)
+    # merge variant packages:
+    #   - lines starting with '-' REMOVE that package from the base list
+    #   - all other non-comment lines are APPENDED
     echo "  merging variant packages..."
-    grep -v '^#' "$VARIANT_DIR/packages.x86_64" | grep -v '^$' >> packages.x86_64
+    while IFS= read -r pkg; do
+        case "$pkg" in
+            ''|'#'*) continue ;;
+            -*) sed -i "/^${pkg#-}$/d" packages.x86_64 ;;
+            *) echo "$pkg" >> packages.x86_64 ;;
+        esac
+    done < "$VARIANT_DIR/packages.x86_64"
+    # dedupe while preserving order (removals may leave blank lines)
+    awk '!seen[$0]++' packages.x86_64 > packages.x86_64.tmp && mv packages.x86_64.tmp packages.x86_64
 
     # merge airootfs overlay
     if [ -d "$VARIANT_DIR/airootfs" ] && [ "$(ls -A "$VARIANT_DIR/airootfs" 2>/dev/null)" ]; then

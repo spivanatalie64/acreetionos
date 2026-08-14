@@ -1,0 +1,13 @@
+[Unit]
+Description=GNOME Display Manager
+Documentation=man:gdm(1)
+After=systemd-user-sessions.service getty@tty1.service systemd-logind.service
+
+[Service]
+Type=notify
+ExecStart=/usr/bin/gdm
+Restart=always
+IgnoreSIGPIPE=no
+
+[Install]
+Alias=display-manager.service

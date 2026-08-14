@@ -1,0 +1,22 @@
+# xfce variant — same AcreetionOS, xfce desktop
+# removes: cinnamon stack + lightdm (re-added where needed)
+-cinnamon
+-cinnamon-control-center
+-cinnamon-desktop
+-cinnamon-menus
+-cinnamon-session
+-cinnamon-settings-daemon
+-cinnamon-screensaver
+-cinnamon-translations
+-cjs
+-muffin
+-nemo
+
+# xfce desktop
+lightdm
+lightdm-gtk-greeter
+xfce4
+xfce4-goodies
+xfce4-terminal
+xfce4-screenshooter
+mousepad

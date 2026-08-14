@@ -1,0 +1,25 @@
+# i3 variant — same AcreetionOS, i3 desktop
+# removes: cinnamon stack + lightdm (re-added where needed)
+-cinnamon
+-cinnamon-control-center
+-cinnamon-desktop
+-cinnamon-menus
+-cinnamon-session
+-cinnamon-settings-daemon
+-cinnamon-screensaver
+-cinnamon-translations
+-cjs
+-muffin
+-nemo
+
+# i3 desktop
+lightdm
+lightdm-gtk-greeter
+i3-wm
+i3status
+i3lock
+dmenu
+alacritty
+picom
+feh
+nitrogen
