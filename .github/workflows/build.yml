@@ -25,9 +25,9 @@ jobs:
         run: |
           pacman -Sy --noconfirm archlinux-keyring
           pacman -S --noconfirm --needed archiso squashfs-tools dosfstools erofs-utils mtools xorriso libarchive grub edk2-shell git
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Cache ISO build
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             /var/cache/pacman/pkg
@@ -51,7 +51,7 @@ jobs:
             sha256sum "$f"
           done
       - name: Upload ISO as artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: acreetionos-${{ matrix.variant }}-iso
           path: out/*.iso
