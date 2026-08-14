@@ -12,9 +12,6 @@ jobs:
   build:
     name: build-${{ matrix.variant }}
     runs-on: ubuntu-latest
-    container:
-      image: archlinux:latest
-      options: --privileged
     timeout-minutes: 240
     strategy:
       fail-fast: false
@@ -23,26 +20,30 @@ jobs:
     steps:
       - name: Install deps
         run: |
-          pacman -Sy --noconfirm archlinux-keyring
-          pacman -S --noconfirm --needed archiso squashfs-tools dosfstools erofs-utils mtools xorriso libarchive grub edk2-shell git
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq archlinux-keyring 2>/dev/null || true
+      # Run archiso via the official archlinux container but on the HOST
+      # namespace with full mount access. archiso needs real loop devices +
+      # /dev /proc /sys mounts inside the chroot — a nested container can't
+      # provide those reliably, so we use a one-shot archlinux container with
+      # --privileged and let it do the mount work.
       - uses: actions/checkout@v4
-      - name: Cache ISO build
-        uses: actions/cache@v4
-        with:
-          path: |
-            /var/cache/pacman/pkg
-            work/
-          key: ${{ runner.os }}-iso-${{ matrix.variant }}-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-iso-${{ matrix.variant }}-
       - name: Build ISO (${{ matrix.variant }})
         run: |
-          chmod +x build.sh
-          if [ "${{ matrix.variant }}" = "cinnamon" ]; then
-            ./build.sh 2>&1
-          else
-            ./build.sh ${{ matrix.variant }} official 2>&1
-          fi
+          docker run --rm --privileged \
+            -v "$PWD:/build" \
+            -w /build \
+            archlinux:latest \
+            bash -c '
+              pacman -Sy --noconfirm archlinux-keyring >/dev/null 2>&1
+              pacman -S --noconfirm --needed archiso squashfs-tools dosfstools erofs-utils mtools xorriso libarchive grub edk2-shell git >/dev/null 2>&1
+              chmod +x build.sh
+              if [ "${{ matrix.variant }}" = "cinnamon" ]; then
+                ./build.sh 2>&1
+              else
+                ./build.sh ${{ matrix.variant }} official 2>&1
+              fi
+            '
       - name: Verify ISO
         run: |
           for f in out/*.iso; do
