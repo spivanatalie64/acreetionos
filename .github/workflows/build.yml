@@ -8,16 +8,18 @@ on:
     - cron: '0 6 * * 1'
   workflow_dispatch:
 
-env:
-  VARIANT: cinnamon
-
 jobs:
   build:
+    name: build-${{ matrix.variant }}
     runs-on: ubuntu-latest
     container:
       image: archlinux:latest
       options: --privileged
-    timeout-minutes: 180
+    timeout-minutes: 240
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [cinnamon, gnome, plasma, xfce, mate, openbox, sway, i3, hyprland]
     steps:
       - name: Install deps
         run: |
@@ -30,13 +32,17 @@ jobs:
           path: |
             /var/cache/pacman/pkg
             work/
-          key: ${{ runner.os }}-iso-${{ github.sha }}
+          key: ${{ runner.os }}-iso-${{ matrix.variant }}-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-iso-
-      - name: Build ISO
+            ${{ runner.os }}-iso-${{ matrix.variant }}-
+      - name: Build ISO (${{ matrix.variant }})
         run: |
           chmod +x build.sh
-          ./build.sh 2>&1
+          if [ "${{ matrix.variant }}" = "cinnamon" ]; then
+            ./build.sh 2>&1
+          else
+            ./build.sh ${{ matrix.variant }} official 2>&1
+          fi
       - name: Verify ISO
         run: |
           for f in out/*.iso; do
@@ -47,6 +53,6 @@ jobs:
       - name: Upload ISO as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: acreetionos-iso
+          name: acreetionos-${{ matrix.variant }}-iso
           path: out/*.iso
           retention-days: 7
